@@ -3,3 +3,7 @@
 ################################################################################
 
 /.vs/LightBddSelenium
+/MyApp.Tests.UI/bin/Debug/net8.0
+/MyApp.Tests.UI/obj
+/MyApp.Web/bin/Debug/net8.0
+/MyApp.Web/obj
