@@ -12,11 +12,17 @@ namespace MyApp.Tests.UI.Features
         private string _email;
         private const string Password = "Test123!";
 
+        private RegisterPage _registerPage;
+        private LoginPage _loginPage;
+
         public UserAuthentication()
         {
             var options = new ChromeOptions();
             options.AddArgument("--window-size=1920,1080");
             _driver = new ChromeDriver(options);
+
+            _registerPage = new RegisterPage(_driver);
+            _loginPage = new LoginPage(_driver);
         }
 
         public void Dispose()
@@ -26,17 +32,14 @@ namespace MyApp.Tests.UI.Features
 
         private void Given_user_is_on_registration_page()
         {
-            _driver.Navigate().GoToUrl("https://localhost:7087/Identity/Account/Register");
+            _registerPage.Open();
         }
 
         private void When_user_registers_with_valid_credentials()
         {
             _email = $"user_{Guid.NewGuid()}@example.com";
-
-            _driver.FindElement(By.Id("Input_Email")).SendKeys(_email);
-            _driver.FindElement(By.Id("Input_Password")).SendKeys(Password);
-            _driver.FindElement(By.Id("Input_ConfirmPassword")).SendKeys(Password);
-            _driver.FindElement(By.Id("registerSubmit")).Click();
+            _registerPage.FillForm(_email, Password);
+            _registerPage.Submit();
 
             Thread.Sleep(1000);
         }
@@ -47,7 +50,6 @@ namespace MyApp.Tests.UI.Features
             _driver.PageSource.Should().Contain("Logout");
         }
 
-
         private void When_user_logs_out_and_logs_back_in()
         {
             _driver.Navigate().GoToUrl("https://localhost:7087/Identity/Account/Logout");
@@ -55,10 +57,9 @@ namespace MyApp.Tests.UI.Features
 
             Thread.Sleep(500);
 
-            _driver.Navigate().GoToUrl("https://localhost:7087/Identity/Account/Login");
-            _driver.FindElement(By.Id("Input_Email")).SendKeys(_email);
-            _driver.FindElement(By.Id("Input_Password")).SendKeys(Password);
-            _driver.FindElement(By.Id("login-submit")).Click();
+            _loginPage.Open();
+            _loginPage.FillForm(_email, Password);
+            _loginPage.Submit();
 
             Thread.Sleep(1000);
         }

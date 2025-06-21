@@ -19,5 +19,5 @@ public class RegisterPage
         _driver.FindElement(By.Id("Input_ConfirmPassword")).SendKeys(password);
     }
 
-    public void Submit() => _driver.FindElement(By.Id("register-submit")).Click();
+    public void Submit() => _driver.FindElement(By.Id("registerSubmit")).Click();
 }
