@@ -10,7 +10,8 @@ namespace MyApp.Tests.UI.Features
     {
         private IWebDriver _driver;
         private string _email;
-        private const string Password = "Test123!";
+        private string _password;
+        private string _expectedResult;
 
         private RegisterPage _registerPage;
         private LoginPage _loginPage;
@@ -35,37 +36,58 @@ namespace MyApp.Tests.UI.Features
             _registerPage.Open();
         }
 
-        private void When_user_registers_with_valid_credentials()
+        private void When_user_registers_with_email_and_password(string email, string password)
         {
-            _email = $"user_{Guid.NewGuid()}@example.com";
-            _registerPage.FillForm(_email, Password);
+            _email = email;
+            _password = password;
+            _registerPage.FillForm(_email, _password);
             _registerPage.Submit();
 
             Thread.Sleep(1000);
         }
 
-        private void Then_user_should_be_logged_in_and_redirected_to_home_page()
+        private void Then_user_should_see(string expectedResult)
         {
-            _driver.Url.Should().Be("https://localhost:7087/");
-            _driver.PageSource.Should().Contain("Logout");
+            _expectedResult = expectedResult;
+
+            switch (expectedResult)
+            {
+                case "Success":
+                    _driver.PageSource.Should().Contain("Logout");
+                    break;
+                case "Invalid email":
+                    _driver.PageSource.Should().Contain("The Email field is not a valid e-mail address.");
+                    break;
+                case "Password Too Weak":
+                    _driver.PageSource.Should().Contain("The Password must be at least 6 and at max 100 characters long.");
+                    break;
+                default:
+                    throw new ArgumentException($"Unknown expected result: {expectedResult}");
+            }
         }
 
-        private void When_user_logs_out_and_logs_back_in()
+        private void When_user_logs_in_again_with_email_and_password_if_result_is_success()
         {
+            if (_expectedResult != "Success")
+                return;
+
             _driver.Navigate().GoToUrl("https://localhost:7087/Identity/Account/Logout");
             _driver.FindElement(By.CssSelector("form button[type='submit']")).Click();
 
             Thread.Sleep(500);
 
             _loginPage.Open();
-            _loginPage.FillForm(_email, Password);
+            _loginPage.FillForm(_email, _password);
             _loginPage.Submit();
 
             Thread.Sleep(1000);
         }
 
-        private void Then_user_should_be_logged_in_again_successfully()
+        private void Then_user_should_be_logged_in_again_successfully_if_result_is_success()
         {
+            if (_expectedResult != "Success")
+                return;
+
             _driver.Url.Should().Be("https://localhost:7087/");
             _driver.PageSource.Should().Contain("Logout");
         }
